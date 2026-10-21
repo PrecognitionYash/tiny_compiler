@@ -14,7 +14,41 @@
 
 ---
 
-## 📌 1. Project Overview & Motivation
+## ⚡ 1. Quick Install & Run (via `curl` - No Rust or Setup Needed!)
+
+You don't even need to clone the repository or install Rust to use `tcomp`. Using `curl` (which is **100% free**, requires **no account**, and is pre-installed on macOS/Linux), you can download and run the compiler in seconds:
+
+### 🍎 For macOS (Apple Silicon M1 / M2 / M3 / M4):
+```bash
+curl -sL https://github.com/PrecognitionYash/tiny_compiler/releases/latest/download/tcomp-macos-aarch64.tar.gz | tar -xz
+chmod +x tcomp
+./tcomp test.t -v
+```
+
+### 💻 For macOS (Intel x86_64):
+```bash
+curl -sL https://github.com/PrecognitionYash/tiny_compiler/releases/latest/download/tcomp-macos-x86_64.tar.gz | tar -xz
+chmod +x tcomp
+./tcomp test.t -v
+```
+
+### 🐧 For Linux (Ubuntu / Debian x86_64):
+```bash
+curl -sL https://github.com/PrecognitionYash/tiny_compiler/releases/latest/download/tcomp-linux-x86_64.tar.gz | tar -xz
+chmod +x tcomp
+./tcomp test.t -v
+```
+
+> **💡 macOS Gatekeeper Tip:**  
+> Downloading via `curl` above automatically bypasses Apple's Gatekeeper quarantine warning.  
+> However, if you manually downloaded `tcomp` through a browser (Chrome/Safari) and see *"Apple could not verify tcomp"*, simply run this one-line command to remove the quarantine flag:
+> ```bash
+> xattr -d com.apple.quarantine tcomp
+> ```
+
+---
+
+## 📌 2. Project Overview & Motivation
 
 Welcome to **`tiny_compiler`** (binary name: `tcomp`)!  
 
@@ -26,7 +60,7 @@ If any error happens in your code, the complier catches it, points out the line 
 
 ---
 
-## 🏗️ 2. Complier Pipeline Architechture
+## 🏗️ 3. Complier Pipeline Architechture
 
 Our compiler is divided into **7 clean sequential phases** (Phase 0 to Phase 6). Each phase takes the output of the previous phase and transforms it:
 
@@ -35,7 +69,7 @@ Our compiler is divided into **7 clean sequential phases** (Phase 0 to Phase 6).
           │
           ▼
    ┌───────────────┐
-   │    Phase 0    │  ===> Preprocessor (Strips comments, preserves line widths)
+   │    Phase 0    │  ===> Preprocessor (Strips comments, emits .ti file)
    └───────┬───────┘
           │
           ▼
@@ -74,13 +108,13 @@ Our compiler is divided into **7 clean sequential phases** (Phase 0 to Phase 6).
 
 ---
 
-## 🔍 3. Detailed Phase Breakdown
+## 🔍 4. Detailed Phase Breakdown
 
 Here is a quick summary of what each phase does under the hood:
 
 | Phase | Phase Name | What It Does In Code | Interactive Explorer Feature |
 |---|---|---|---|
-| **0** | **Preprocessor** | Strips `#` and `//` comments without altering character offsets or line numbers. | Side-by-side synchronized view of original `.t` vs preprocessed `.ipp` code. |
+| **0** | **Preprocessor** | Strips `#` and `//` comments without altering character offsets or line numbers. Emits `.ti` preprocessed file. | Side-by-side synchronized view of original `.t` vs preprocessed `.ti` code. |
 | **1** | **Lexical Analyzer** | DFA state machine that scans identifiers, numbers, operators, and generates `<INDENT>` and `<DEDENT>` tokens using an indentation stack. | Searchable token table showing token kind, lexeme, line, and column. |
 | **2** | **Syntax Parser** | Recursive descent parser using precedence climbing for binary expressions. Emits clean AST nodes. | Interactive AST graph canvas with click-to-expand, collapse, and zoom controls. |
 | **3** | **Semantic Checker** | Builds lexical scopes, checks variable declaration before use, verifies function call arity, and computes SDD attributes. | Scope hierarchy tree, symbol table viewer, and SDD card evaluations. |
@@ -90,14 +124,14 @@ Here is a quick summary of what each phase does under the hood:
 
 ---
 
-## 📸 4. Visual Tour of All 7 Compiler Phases
+## 📸 5. Visual Tour of All 7 Compiler Phases
 
 Our GUI is built using `eframe` and `egui` with a dark theme. You can launch it using `./target/release/tcomp test.t -v`. Below are actual screenshots of every phase in action:
 
 <br>
 
-### 🔹 Phase 0: Preprocessor (`test.t` &rarr; `test.ipp`)
-*Synchronized dual-pane view showing comment removal while retaining exact line offsets for source debugging.*
+### 🔹 Phase 0: Preprocessor (`test.t` &rarr; `test.ti`)
+*Synchronized dual-pane view showing comment removal while retaining exact line offsets for source debugging. Emits clean preprocessed `.ti` output.*
 
 ![Phase 0 - Preprocessor](assets/preprocess.png)
 
@@ -159,7 +193,7 @@ Our GUI is built using `eframe` and `egui` with a dark theme. You can launch it 
 
 ---
 
-## 💻 5. The Source Language (`.t`)
+## 💻 6. The Source Language (`.t`)
 
 The language is clean, readable, and python-inspired:
 
@@ -214,9 +248,9 @@ def main():
 
 ---
 
-## ⚙️ 6. System Requirements & Prerequisites
+## ⚙️ 7. System Requirements & Prerequisites (For Building from Source)
 
-Before compiling or running `tcomp`, make sure you have:
+Before compiling or running `tcomp` from source, make sure you have:
 
 1. **Rust Toolchain**: Stable Rust and Cargo (version 1.80+ recommended).  
    Install via: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
@@ -236,7 +270,7 @@ Before compiling or running `tcomp`, make sure you have:
 
 ---
 
-## 🛠️ 7. How to Build & Run
+## 🛠️ 8. How to Build & Run from Source
 
 ### Step 1: Clone the Repository
 ```sh
@@ -267,7 +301,7 @@ The compiled binary will be located at `target/release/tcomp` (`target\release\t
 #### B) Stop at Preprocessing (Phase 0 output):
 ```sh
 ./target/release/tcomp test.t -E
-# Generates test.ipp with comments stripped
+# Generates test.ti with comments stripped
 ```
 
 #### C) Stop at Assembly Generation (Phase 6 output):
@@ -287,7 +321,7 @@ The compiled binary will be located at `target/release/tcomp` (`target\release\t
 
 ---
 
-## 🧪 8. Testing & Quality Checks
+## 🧪 9. Testing & Quality Checks
 
 We have set up full linting and checks to maintain clean code standards:
 
@@ -307,7 +341,7 @@ cargo test
 
 ---
 
-## 🤖 9. CI/CD Release Pipeline
+## 🤖 10. CI/CD Release Pipeline
 
 We have automated CI/CD using GitHub Actions located in `.github/workflows/`:
 
@@ -321,7 +355,7 @@ We have automated CI/CD using GitHub Actions located in `.github/workflows/`:
 
 ---
 
-## 🚀 10. How to Upload This Project to GitHub
+## 🚀 11. How to Upload This Project to GitHub
 
 If you are uploading this project to your GitHub account for the first time, follow these exact commands in your terminal:
 
@@ -358,7 +392,7 @@ Once pushed, go to your GitHub repository:
 
 ---
 
-## ❓ 11. Frequently Asked Questions (Viva / Interview Prep)
+## ❓ 12. Frequently Asked Questions (Viva / Interview Prep)
 
 **Q1: How do you handle indentation without curly braces?**  
 *Answer:* In Phase 1 (`dfa_lexer.rs`), we maintain an indentation level stack. When the leading whitespace count is greater than the stack top, we push the new width and emit `<INDENT>`. When it is lower, we pop matching levels and emit `<DEDENT>`.
@@ -371,7 +405,7 @@ Once pushed, go to your GitHub repository:
 
 ---
 
-## 👥 12. Contributors & Acknowledgements
+## 👥 13. Contributors & Acknowledgements
 
 - **Developer:** Yash & CSE Project Group
 - **Guidance:** Department of Computer Science & Engineering

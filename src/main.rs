@@ -38,7 +38,7 @@ struct Cli {
 }
 
 fn usage() -> &'static str {
-    "Usage:\n  tcomp <file.t> [-o <executable>]\n  tcomp <file.t> -E [-o <file.ipp>]\n  tcomp <file.t> -S [-o <file.s>]\n  tcomp <file.t> -v [start..end]\n\nPhases: 0 preprocessor, 1 lexer, 2 parser, 3 semantic analysis, 4 TAC, 5 optimization/CFG, 6 x86-64 code generation."
+    "Usage:\n  tcomp <file.t> [-o <executable>]\n  tcomp <file.t> -E [-o <file.ti>]\n  tcomp <file.t> -S [-o <file.s>]\n  tcomp <file.t> -v [start..end]\n\nPhases: 0 preprocessor, 1 lexer, 2 parser, 3 semantic analysis, 4 TAC, 5 optimization/CFG, 6 x86-64 code generation."
 }
 
 fn parse_range(text: &str) -> Result<(u8, u8), String> {

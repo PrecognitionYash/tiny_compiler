@@ -9,7 +9,7 @@ pub fn preprocess(source: &str) -> String {
 
 pub fn output_path(input: &Path) -> PathBuf {
     let mut path = input.to_path_buf();
-    path.set_extension("ipp");
+    path.set_extension("ti");
     path
 }
 

@@ -25,7 +25,7 @@ pub fn show(ui: &mut egui::Ui, snapshot: &CompilerSnapshot) {
             kind: CodeKind::Source,
         },
         CodePane {
-            title: "Preprocessed source · .ipp",
+            title: "Preprocessed source · .ti",
             text: &snapshot.preprocessed_source,
             kind: CodeKind::Source,
         },
