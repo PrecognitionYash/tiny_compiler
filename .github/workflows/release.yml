@@ -1,0 +1,152 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag / Release version (e.g., v0.1.0)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    name: Build (${{ matrix.target-name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target-name: linux-x86_64
+            artifact-name: tcomp-linux-x86_64.tar.gz
+            binary-name: tcomp
+            archive-type: tar
+
+          - os: windows-latest
+            target-name: windows-x86_64
+            artifact-name: tcomp-windows-x86_64.zip
+            binary-name: tcomp.exe
+            archive-type: zip
+
+          - os: macos-14
+            target-name: macos-aarch64
+            artifact-name: tcomp-macos-aarch64.tar.gz
+            binary-name: tcomp
+            archive-type: tar
+
+          - os: macos-13
+            target-name: macos-x86_64
+            artifact-name: tcomp-macos-x86_64.tar.gz
+            binary-name: tcomp
+            archive-type: tar
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux GUI dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxcb-render0-dev \
+            libxcb-shape0-dev \
+            libxcb-xfixes0-dev \
+            libxkbcommon-dev \
+            libssl-dev \
+            libfontconfig1-dev \
+            libgl1-mesa-dev
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target-name }}
+
+      - name: Build release binary
+        run: cargo build --release --bin tcomp
+
+      - name: Package artifacts (Unix - tar.gz)
+        if: matrix.archive-type == 'tar'
+        run: |
+          mkdir -p package
+          cp target/release/${{ matrix.binary-name }} package/
+          cp README.md package/
+          cp LICENSE package/
+          cp test.t package/
+          tar -czvf ${{ matrix.artifact-name }} -C package .
+          shasum -a 256 ${{ matrix.artifact-name }} > ${{ matrix.artifact-name }}.sha256
+
+      - name: Package artifacts (Windows - zip)
+        if: matrix.archive-type == 'zip'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path package
+          Copy-Item target/release/${{ matrix.binary-name }} -Destination package/
+          Copy-Item README.md -Destination package/
+          Copy-Item LICENSE -Destination package/
+          Copy-Item test.t -Destination package/
+          Compress-Archive -Path package/* -DestinationPath ${{ matrix.artifact-name }}
+          (Get-FileHash ${{ matrix.artifact-name }} -Algorithm SHA256).Hash.ToLower() + "  ${{ matrix.artifact-name }}" | Out-File -Encoding ascii "${{ matrix.artifact-name }}.sha256"
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.target-name }}
+          path: |
+            ${{ matrix.artifact-name }}
+            ${{ matrix.artifact-name }}.sha256
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: build-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          pattern: release-*
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS file
+        run: |
+          cd release-assets
+          cat *.sha256 > SHA256SUMS.txt
+          rm -f *.sha256
+          ls -la
+
+      - name: Determine Release Tag
+        id: get_tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            echo "TAG_NAME=${{ github.event.inputs.tag_name }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ github.ref_name }}" ]; then
+            echo "TAG_NAME=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG_NAME=v0.1.0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_tag.outputs.TAG_NAME }}
+          name: "tiny_compiler ${{ steps.get_tag.outputs.TAG_NAME }} Release"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

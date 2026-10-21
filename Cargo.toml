@@ -1,0 +1,13 @@
+[package]
+name = "tiny_compiler"
+version = "0.1.0"
+edition = "2021"
+description = "An educational, end-to-end compiler for an indentation-sensitive language"
+license = "MIT"
+
+[[bin]]
+name = "tcomp"
+path = "src/main.rs"
+
+[dependencies]
+eframe = "0.37"
