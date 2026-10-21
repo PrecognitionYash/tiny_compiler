@@ -24,24 +24,28 @@ jobs:
         include:
           - os: ubuntu-latest
             target-name: linux-x86_64
+            rust-target: x86_64-unknown-linux-gnu
             artifact-name: tcomp-linux-x86_64.tar.gz
             binary-name: tcomp
             archive-type: tar
 
           - os: windows-latest
             target-name: windows-x86_64
+            rust-target: x86_64-pc-windows-msvc
             artifact-name: tcomp-windows-x86_64.zip
             binary-name: tcomp.exe
             archive-type: zip
 
-          - os: macos-14
+          - os: macos-latest
             target-name: macos-aarch64
+            rust-target: aarch64-apple-darwin
             artifact-name: tcomp-macos-aarch64.tar.gz
             binary-name: tcomp
             archive-type: tar
 
-          - os: macos-13
+          - os: macos-latest
             target-name: macos-x86_64
+            rust-target: x86_64-apple-darwin
             artifact-name: tcomp-macos-x86_64.tar.gz
             binary-name: tcomp
             archive-type: tar
@@ -65,6 +69,8 @@ jobs:
 
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-target }}
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -72,13 +78,13 @@ jobs:
           key: ${{ matrix.target-name }}
 
       - name: Build release binary
-        run: cargo build --release --bin tcomp
+        run: cargo build --release --bin tcomp --target ${{ matrix.rust-target }}
 
       - name: Package artifacts (Unix - tar.gz)
         if: matrix.archive-type == 'tar'
         run: |
           mkdir -p package
-          cp target/release/${{ matrix.binary-name }} package/
+          cp target/${{ matrix.rust-target }}/release/${{ matrix.binary-name }} package/
           cp README.md package/
           cp LICENSE package/
           cp test.t package/
@@ -90,7 +96,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path package
-          Copy-Item target/release/${{ matrix.binary-name }} -Destination package/
+          Copy-Item target/${{ matrix.rust-target }}/release/${{ matrix.binary-name }} -Destination package/
           Copy-Item README.md -Destination package/
           Copy-Item LICENSE -Destination package/
           Copy-Item test.t -Destination package/
