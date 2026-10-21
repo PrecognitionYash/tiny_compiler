@@ -22,21 +22,18 @@ You don't even need to clone the repository or install Rust to use `tcomp`. Usin
 ```bash
 curl -sL https://github.com/PrecognitionYash/tiny_compiler/releases/latest/download/tcomp-macos-aarch64.tar.gz | tar -xz
 chmod +x tcomp
-./tcomp test.t -v
 ```
 
 ### 💻 For macOS (Intel x86_64):
 ```bash
 curl -sL https://github.com/PrecognitionYash/tiny_compiler/releases/latest/download/tcomp-macos-x86_64.tar.gz | tar -xz
 chmod +x tcomp
-./tcomp test.t -v
 ```
 
 ### 🐧 For Linux (Ubuntu / Debian x86_64):
 ```bash
 curl -sL https://github.com/PrecognitionYash/tiny_compiler/releases/latest/download/tcomp-linux-x86_64.tar.gz | tar -xz
 chmod +x tcomp
-./tcomp test.t -v
 ```
 
 > **💡 macOS Gatekeeper Tip:**  
