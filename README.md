@@ -392,25 +392,11 @@ Once pushed, go to your GitHub repository:
 
 ---
 
-## ❓ 12. Frequently Asked Questions (Viva / Interview Prep)
-
-**Q1: How do you handle indentation without curly braces?**  
-*Answer:* In Phase 1 (`dfa_lexer.rs`), we maintain an indentation level stack. When the leading whitespace count is greater than the stack top, we push the new width and emit `<INDENT>`. When it is lower, we pop matching levels and emit `<DEDENT>`.
-
-**Q2: How does constant folding work?**  
-*Answer:* In Phase 5 (`constant_folding.rs`), we keep track of constant assignments in a hashmap. When an arithmetic operation has two known constants (e.g. `15 + 3`), we compute it at compile time and substitute the result. Facts are cleared at control flow boundries (labels, jumps) to prevent invalid values leaking.
-
-**Q3: What calling convension does the compiler use?**  
-*Answer:* On Linux and macOS, it follows System V AMD64 ABI using registers `RDI, RSI, RDX, RCX, R8, R9` and 16-byte stack alignment. On Windows, it follows the Microsoft x64 ABI using `RCX, RDX, R8, R9` with 32 bytes of caller shadow space.
-
----
-
-## 👥 13. Contributors & Acknowledgements
+## 👥 12. Contributors & Acknowledgements
 
 - **Developer:** Yash & CSE Project Group
 - **Guidance:** Department of Computer Science & Engineering
 - **References:**
-  - Alfred V. Aho, Monica S. Lam, Ravi Sethi, Jeffrey D. Ullman (*Compilers: Principles, Techniques, and Tools*)
   - `egui` and `eframe` by Emil Ernerfeldt
   - Rust Documentation and Compiler WG
 
